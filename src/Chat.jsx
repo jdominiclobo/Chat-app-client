@@ -5,6 +5,7 @@ import {
     InMemoryCache,
     ApolloProvider,
     useQuery,
+    useMutation,
     gql
   } from "@apollo/client";
   import { Container, Row, Col, FormInput, Button } from 'shards-react'; 
@@ -23,8 +24,17 @@ import {
         }
     }
   `
+    const POST_MESSAGE = gql`
+        mutation($user:String!, $content:String!) {
+            postMessage(user: $user, content: $content)
+        }
+    `
+
+
   const Messages = ({ user }) => {
-      const { data } = useQuery(GET_MESSAGES)
+      const { data } = useQuery(GET_MESSAGES, {
+        pollInterval: 500,
+      })
       if(!data) {
           return null
       }
@@ -69,9 +79,60 @@ import {
 
 
   const Chat = () => {
+      const [state, stateSet] = useState({
+          user: "joe",
+          content: ""
+      })
+
+      const [postMessage] = useMutation(POST_MESSAGE)
+
+      const handleSend = () => {
+          if(state.content.length > 0) {
+            postMessage({
+                variables: state
+            })
+          }
+          stateSet({
+              ...stateSet,
+              content: ""
+          })
+      }
+
       return (
           <Container>
-              <Messages user="joe" />
+              <Messages user={state.user} />
+                <Row>
+                    <Col xs={2} style={{padding: 0}}>
+                        <FormInput 
+                            label="User"
+                            value={state.user}
+                            onChange={(e) => stateSet({
+                                ...state,
+                                user: e.target.value
+                            })}
+                        />
+                    </Col>
+                    <Col xs={8} style={{padding: 0}}>
+                        <FormInput 
+                            label="User"
+                            value={state.content}
+                            onChange={(e) => stateSet({
+                                ...state,
+                                content: e.target.value
+                            })}
+                            onKeyUp={(e) => {
+                                if(e.keyCode == 13){
+                                    handleSend()
+                                }
+                            }}
+                        />
+                    </Col>
+                    <Col xs={2} style={{padding: 0}}>
+                        <Button onClick={() => handleSend()}>
+                            Send
+                        </Button>
+                    </Col>
+                </Row>
           </Container>
       )
   }
