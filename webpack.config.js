@@ -45,7 +45,7 @@ module.exports = {
       filename: "remoteEntry.js",
       remotes: {},
       exposes: {
-        chat: "Chat",
+        "./Chat": "./src/Chat",
       },
       shared: {
         ...deps,
